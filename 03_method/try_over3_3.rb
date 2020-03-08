@@ -58,7 +58,12 @@ module TryOver3::OriginalAccessor2
           self.class.define_method "#{attr_sym}?" do
             @attr == true
           end
+        else
+          if respond_to?("#{attr_sym}?")
+            self.class.undef_method("#{attr_sym}?")
+          end
         end
+
         @attr = value
       end
     end
@@ -71,7 +76,24 @@ end
 # TryOver3::A4.runners = [:Hoge]
 # TryOver3::A4::Hoge.run
 # # => "run Hoge"
+class TryOver3::A4
+  def self.runners=(val)
+    @runners = val
+  end
 
+  def self.const_missing(const_name)
+    if @runners.include? const_name
+      return Class.new do |c|
+        @runner_name = const_name.to_s
+        def self.run
+          "run " + @runner_name
+        end
+      end
+    end
+
+    super name
+  end
+end
 
 # Q5. チャレンジ問題！ 挑戦する方はテストの skip を外して挑戦してみてください。
 #
